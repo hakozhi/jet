@@ -36,14 +36,8 @@ pub fn check_is_root(directory_path: Path) -> bool {
 }
 
 pub fn read_file_content(filepath: Path) -> String {
-    let contents = match fs::read_to_string(filepath) {
-        Ok(contents) => {
-            contents
-        }
-        Err(_e) => {
-           panic!("File doesn't exist.") 
-        }
-    };
-
-    return contents;
+    match fs::read_to_string(filepath) {
+        Ok(contents) => contents,
+        Err(_) => panic!("File doesn't exist.")
+    }
 }

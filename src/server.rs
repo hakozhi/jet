@@ -1,5 +1,5 @@
 use crate::generate;
-use crate::article::{get_articles, convert_article_to_html};
+use crate::article::{get_articles};
 use crate::helper;
 use axum::{routing::get, Router, extract::Path, response::Html};
 use tower_http::services::ServeDir;
@@ -32,7 +32,7 @@ async fn get_article(Path(article_slug): Path<String>) -> Html<String> {
     let articles = get_articles(&articles_directory);
 
     if let Some(article) = articles.iter().find(|a| a.slug == article_slug) {
-        Html(convert_article_to_html(&helper::read_file_content("./templates/article.html".to_string()), article))
+        Html(article.to_html(&helper::read_file_content("./templates/article.html".to_string())))
     } else {
         Html("Not Found".to_string())
     }

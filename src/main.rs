@@ -7,7 +7,6 @@ mod helper;
 mod article;
 mod rss;
 mod blog;
-mod error;
 
 fn main() {
     let current_directory = String::from("./");
