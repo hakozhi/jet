@@ -5,10 +5,9 @@ use std::collections::HashMap;
 use std::fs;
 use std::io;
 use std::path;
+use std::path::Path;
 use crate::helper;
 use crate::article::Articles;
-
-pub type Path = String;
 
 #[derive(serde::Serialize)]
 struct YearArchive {
@@ -22,14 +21,13 @@ pub fn create_homepage_html_file(articles: Articles, output_dir_path: &Path, is_
         fs::create_dir(&output_dir_path)?;
     }
 
-    let mut homepage_html_filename = path::PathBuf::from(output_dir_path);
-    homepage_html_filename.push("index.html");
+    let homepage_html_filename = Path::new(output_dir_path).join("index.html");
 
     fs::write(
         homepage_html_filename.to_str().unwrap(),
         create_homepage_html(
             articles,
-            helper::read_file_content("templates/homepage.html".to_string()),
+            helper::read_file_content(Path::new("templates/homepage.html")),
             is_production
         ),
     )?;

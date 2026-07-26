@@ -3,11 +3,12 @@ use chrono::{Utc, TimeZone};
 use crate::blog::Blog;
 use crate::article::{Article, Articles};
 use std::fs;
+use std::path::Path;
 
-pub fn create_rss_xml(blog: &Blog, output_dir: String) {
+pub fn create_rss_xml(blog: &Blog, output_dir: &Path) {
     let rss_content = create_rss_content(blog);
 
-    fs::write(output_dir + "/rss.xml", rss_content).unwrap();
+    fs::write(output_dir.join("rss.xml"), rss_content).unwrap();
 }
 
 fn create_rss_content(blog: &Blog) -> String {

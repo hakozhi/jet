@@ -8,6 +8,7 @@ use chrono;
 use std::fs;
 use std::io;
 use std::path;
+use std::path::Path;
 use std::path::PathBuf;
 
 use clap::{Parser, Subcommand};
@@ -44,9 +45,9 @@ impl CLI {
         match &self.command {
             Command::Build { output_dir } => {
                 if let Some(output_dir) = output_dir {
-                    self.build_site(output_dir.to_string_lossy().into_owned());
+                    self.build_site(output_dir);
                 } else {
-                    self.build_site("public/".to_string());
+                    self.build_site(Path::new("public/"));
                 }
             }
             Command::Serve => self.serve(),
@@ -56,9 +57,9 @@ impl CLI {
         }
     }
 
-    fn build_site(&self, output_dir: generate::Path) {
-        let config_path = "jet.toml".to_string();
-        let articles_dir = "./articles".to_string();
+    fn build_site(&self, output_dir: &Path) {
+        let config_path = Path::new("jet.toml");
+        let articles_dir = Path::new("./articles");
 
         let blog = Blog::new(config_path, &articles_dir);
         let articles = article::get_articles(&articles_dir);
@@ -73,8 +74,8 @@ impl CLI {
 
                 match article::create_article_html_file(
                     &article,
-                    "templates/article.html".to_string(),
-                    output_dir_path.to_str().unwrap().to_string(),
+                    Path::new("templates/article.html"),
+                    &output_dir_path,
                 ) {
                     Ok(_ok) => {}
                     Err(e) => {
@@ -84,7 +85,8 @@ impl CLI {
             }
         }
 
-        helper::copy_assets_to_output_dir("assets/", &output_dir);
+        println!("{}", output_dir.as_os_str().to_str().unwrap());
+        helper::copy_assets_to_output_dir(Path::new("assets/"), &output_dir);
         rss::create_rss_xml(&blog, output_dir);
 
         println!("Site was generated successfully.");

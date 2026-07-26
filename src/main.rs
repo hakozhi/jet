@@ -1,3 +1,5 @@
+use std::path::Path;
+
 use clap::Parser;
 use commands::CLI;
 mod commands;
@@ -9,7 +11,7 @@ mod rss;
 mod blog;
 
 fn main() {
-    let current_directory = String::from("./");
+    let current_directory = Path::new("./");
 
     if !helper::check_is_root(current_directory) {
         println!("Error: the current directory is not a Jet project.");

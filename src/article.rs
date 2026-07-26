@@ -1,10 +1,11 @@
-use crate::generate::{Path};
 use chrono::{NaiveDate};
 use minijinja::{context, Environment};
 use markdown_frontmatter;
 use std::io;
 use std::fs;
 use std::path;
+use std::path::Path;
+use std::path::PathBuf;
 use crate::helper;
 
 #[derive(serde::Serialize)]
@@ -18,7 +19,7 @@ pub struct Article {
 }
 
 impl Article {
-    pub fn from_file(path: Path) -> Article {
+    pub fn from_file(path: &Path) -> Article {
         let content = helper::read_file_content(path);
         let (frontmatter, body) = markdown_frontmatter::parse::<Frontmatter>(&content).unwrap();
         let compile_options = markdown::CompileOptions {
@@ -65,7 +66,7 @@ struct Frontmatter {
 pub fn get_articles(articles_dir: &Path) -> Articles {
     let filepaths = get_article_filepaths(&articles_dir).unwrap();
     let articles: Articles = filepaths.into_iter()
-        .map(|path| Article::from_file(path))
+        .map(|path| Article::from_file(&path))
         .collect();
 
     return articles;
@@ -73,8 +74,8 @@ pub fn get_articles(articles_dir: &Path) -> Articles {
 
 pub fn create_article_html_file(
     article: &Article,
-    article_template_path: Path,
-    output_dir: Path,
+    article_template_path: &Path,
+    output_dir: &Path,
 ) -> io::Result<()> {
     if !path::Path::new(&output_dir).is_dir() {
         fs::create_dir(&output_dir)?;
@@ -84,26 +85,26 @@ pub fn create_article_html_file(
     output_dir_path.push(&(article.slug.clone() + ".html"));
 
     fs::write(
-        output_dir_path.to_str().unwrap(),
+        output_dir_path,
         article.to_html(&helper::read_file_content(article_template_path))
     )?;
     return Ok(())
 }
 
-fn get_article_filepaths(article_directory: &str) -> io::Result<Vec<Path>> {
-    let mut article_filepaths: Vec<Path> = vec![];
+fn get_article_filepaths(article_directory: &Path) -> io::Result<Vec<PathBuf>> {
+    let mut article_filepaths: Vec<PathBuf> = vec![];
 
     for entry in fs::read_dir(article_directory)? {
         let entry = entry?;
         let path = entry.path();
 
         if path.is_dir() {
-            let sub_files = get_article_filepaths(path.to_string_lossy().as_ref())?;
+            let sub_files = get_article_filepaths(&path)?;
             article_filepaths.extend(sub_files);
         } else if path.is_file() {
             if let Some(ext) = path.extension() {
                 if ext == "md" {
-                    article_filepaths.push(path.to_str().unwrap().to_string());
+                    article_filepaths.push(path);
                 }
             }
         }
