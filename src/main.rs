@@ -1,5 +1,5 @@
 use clap::Parser;
-use commands::CLI;
+use cli::CLI;
 use error::JetError;
 use jet::*;
 

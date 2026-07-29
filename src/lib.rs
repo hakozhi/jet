@@ -1,5 +1,5 @@
 pub mod article;
-pub mod commands;
+pub mod cli;
 pub mod error;
 pub mod generate;
 pub mod helper;
