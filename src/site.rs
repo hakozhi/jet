@@ -6,7 +6,7 @@ use crate::error::{JetError, Result};
 use crate::{article, helper};
 use crate::article::Articles;
 
-pub struct Blog {
+pub struct Site {
     pub config: Config,
     pub articles: Articles
 }
@@ -18,10 +18,10 @@ pub struct Config {
     pub description: String,
 }
 
-impl Blog {
-    pub fn new(config_path: &Path, articles_dir: &Path) -> Result<Blog> {
-        Ok(Blog {
-            config: Blog::read_blog_config(config_path)?,
+impl Site {
+    pub fn new(config_path: &Path, articles_dir: &Path) -> Result<Site> {
+        Ok(Site {
+            config: Site::read_blog_config(config_path)?,
             articles: article::get_articles(articles_dir),
         })
     }

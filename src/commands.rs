@@ -1,6 +1,6 @@
 use crate::article;
 use crate::article::create_article_html_file;
-use crate::blog::Blog;
+use crate::site::Site;
 use crate::error::JetError;
 use crate::error::Result;
 use crate::generate;
@@ -9,8 +9,6 @@ use crate::server;
 use crate::helper;
 use chrono;
 use std::fs;
-use std::io;
-use std::path;
 use std::path::Path;
 use std::path::PathBuf;
 
@@ -67,7 +65,7 @@ impl CLI {
         let config_path = Path::new("jet.toml");
         let articles_dir = Path::new("./articles");
 
-        let blog = Blog::new(config_path, &articles_dir)?;
+        let blog = Site::new(config_path, &articles_dir)?;
         let articles = article::get_articles(&articles_dir);
 
         let _ = generate::create_homepage_html_file(articles, &output_dir, true);

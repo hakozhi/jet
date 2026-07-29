@@ -8,7 +8,7 @@ mod server;
 mod helper;
 mod article;
 mod rss;
-mod blog;
+mod site;
 
 fn main() {
     let cli = CLI::parse();
