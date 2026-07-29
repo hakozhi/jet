@@ -6,6 +6,8 @@ use std::fs;
 use std::path;
 use std::path::Path;
 use std::path::PathBuf;
+use crate::error::JetError;
+use crate::error::Result;
 use crate::helper;
 
 #[derive(serde::Serialize)]
@@ -76,19 +78,23 @@ pub fn create_article_html_file(
     article: &Article,
     article_template_path: &Path,
     output_dir: &Path,
-) -> io::Result<()> {
+) -> Result<()> {
     if !path::Path::new(&output_dir).is_dir() {
-        fs::create_dir(&output_dir)?;
+        fs::create_dir(&output_dir).unwrap();
     }
 
     let mut output_dir_path = path::PathBuf::from(output_dir);
     output_dir_path.push(&(article.slug.clone() + ".html"));
 
-    fs::write(
+    let result = fs::write(
         output_dir_path,
         article.to_html(&helper::read_file_content(article_template_path))
-    )?;
-    return Ok(())
+    );
+
+    match result {
+        Ok(()) => Ok(()),
+        Err(_) => Err(JetError::FailedToCreateArticleFile)
+    }
 }
 
 fn get_article_filepaths(article_directory: &Path) -> io::Result<Vec<PathBuf>> {

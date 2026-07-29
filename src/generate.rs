@@ -3,10 +3,10 @@ use minijinja::{context, Environment};
 use serde;
 use std::collections::HashMap;
 use std::fs;
-use std::io;
 use std::path;
 use std::path::Path;
-use crate::helper;
+use crate::error::JetError;
+use crate::error::Result;
 use crate::article::Articles;
 
 #[derive(serde::Serialize)]
@@ -16,23 +16,22 @@ struct YearArchive {
 
 type YearArchives = HashMap<i32, YearArchive>;
 
-pub fn create_homepage_html_file(articles: Articles, output_dir_path: &Path, is_production: bool) -> io::Result<()> {
+pub fn create_homepage_html_file(articles: Articles, output_dir_path: &Path, is_production: bool) -> Result<()> {
     if !path::Path::new(&output_dir_path).is_dir() {
-        fs::create_dir(&output_dir_path)?;
+        fs::create_dir(&output_dir_path).unwrap();
     }
 
     let homepage_html_filename = Path::new(output_dir_path).join("index.html");
+    let template = match fs::read_to_string(Path::new("templates/homepage.html")) {
+        Ok(template) => template,
+        Err(_) => return Err(JetError::TemplateNotFound)
+    };
+    let html = create_homepage_html(articles, template, is_production);
 
-    fs::write(
-        homepage_html_filename.to_str().unwrap(),
-        create_homepage_html(
-            articles,
-            helper::read_file_content(Path::new("templates/homepage.html")),
-            is_production
-        ),
-    )?;
-
-    return Ok(());
+    match fs::write(homepage_html_filename, html) {
+        Ok(_) => Ok(()),
+        Err(_) => Err(JetError::FailedToCreateHomepageFile)
+    }
 }
 
 pub fn create_homepage_html(articles: Articles, template: String, is_production: bool) -> String {

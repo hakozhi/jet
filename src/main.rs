@@ -1,8 +1,8 @@
-use std::path::Path;
-
 use clap::Parser;
 use commands::CLI;
+use error::JetError;
 mod commands;
+mod error;
 mod generate;
 mod server;
 mod helper;
@@ -11,13 +11,17 @@ mod rss;
 mod blog;
 
 fn main() {
-    let current_directory = Path::new("./");
+    let cli = CLI::parse();
 
-    if !helper::check_is_root(current_directory) {
-        println!("Error: the current directory is not a Jet project.");
-        return;
-    } else {
-        let cli = CLI::parse();
-        cli.run();
+    if let Err(e) = cli.run() {
+        let error_msg = match e {
+            JetError::OutsideProject => "Error: The current directory is not a Jet project",
+            JetError::TemplateNotFound => "Error: The template files are not found",
+            JetError::IncompleteSiteConfig => "Error: The site config file is incomplete",
+            JetError::FailedToCreateHomepageFile => "Error: Failed to create homepage file",
+            JetError::FailedToCreateArticleFile => "Error: Failed to create article files",
+            JetError::InvalidBaseURL => "Error: The BaseURL is invalid",
+        };
+        println!("{error_msg}");
     }
 }

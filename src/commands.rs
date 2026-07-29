@@ -1,5 +1,8 @@
 use crate::article;
+use crate::article::create_article_html_file;
 use crate::blog::Blog;
+use crate::error::JetError;
+use crate::error::Result;
 use crate::generate;
 use crate::rss;
 use crate::server;
@@ -41,27 +44,30 @@ enum Command {
 }
 
 impl CLI {
-    pub fn run(&self) {
+    pub fn run(&self) -> Result<()> {
+        let current_directory = Path::new("./");
+        if !helper::check_is_root(current_directory) {
+            return Err(JetError::OutsideProject)
+        }
+
         match &self.command {
             Command::Build { output_dir } => {
                 if let Some(output_dir) = output_dir {
-                    self.build_site(output_dir);
+                    self.build_site(output_dir)
                 } else {
-                    self.build_site(Path::new("public/"));
+                    self.build_site(Path::new("public/"))
                 }
             }
-            Command::Serve => self.serve(),
-            Command::Create { article_slug } => {
-                let _ = self.create_article(article_slug.clone());
-            }    
+            Command::Serve => Ok(self.serve()),
+            Command::Create { article_slug } => self.create_article(article_slug.clone())
         }
     }
 
-    fn build_site(&self, output_dir: &Path) {
+    fn build_site(&self, output_dir: &Path) -> Result<()> {
         let config_path = Path::new("jet.toml");
         let articles_dir = Path::new("./articles");
 
-        let blog = Blog::new(config_path, &articles_dir);
+        let blog = Blog::new(config_path, &articles_dir)?;
         let articles = article::get_articles(&articles_dir);
 
         let _ = generate::create_homepage_html_file(articles, &output_dir, true);
@@ -69,19 +75,8 @@ impl CLI {
 
         for article in articles {
             if !article.draft {
-                let mut output_dir_path = path::PathBuf::from(&output_dir);
-                output_dir_path.push("posts/");
-
-                match article::create_article_html_file(
-                    &article,
-                    Path::new("templates/article.html"),
-                    &output_dir_path,
-                ) {
-                    Ok(_ok) => {}
-                    Err(e) => {
-                        println!("{}", e);
-                    }
-                };
+                let output_dir_path = Path::new(&output_dir).join("posts/");
+                create_article_html_file(&article, Path::new("templates/article.html"), &output_dir_path)?;
             }
         }
 
@@ -90,16 +85,22 @@ impl CLI {
         rss::create_rss_xml(&blog, output_dir);
 
         println!("Site was generated successfully.");
+
+        Ok(())
     }
 
-    fn create_article(&self, slug: String) -> io::Result<()> {
+    fn create_article(&self, slug: String) -> Result<()> {
         let article_content = DEFAULT_ARTICLE_TEMPLATE
             .replace("{date}", chrono::Local::now().format("%Y-%m-%d").to_string().as_str())
             .replace("{slug}", slug.as_str());
 
-        fs::write(format!("articles/{}.md", slug), article_content)?;
-        println!("Create article: articles/{slug}.md");
-        Ok(())
+        match fs::write(format!("articles/{}.md", slug), article_content) {
+            Ok(()) => {
+                println!("Create article: articles/{slug}.md");
+                Ok(())
+            }
+            Err(_) => Err(JetError::FailedToCreateArticleFile)
+        }
     }
 
     fn serve(&self) {
