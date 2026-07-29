@@ -1,17 +1,17 @@
 use crate::article::create_article_html_file;
-use crate::renderer::Renderer;
-use crate::site::Site;
 use crate::error::JetError;
 use crate::error::Result;
 use crate::generate;
+use crate::helper;
+use crate::renderer::Renderer;
 use crate::rss;
 use crate::server;
-use crate::helper;
+use crate::site::Site;
 use chrono;
-use url::Url;
 use std::fs;
 use std::path::Path;
 use std::path::PathBuf;
+use url::Url;
 
 use clap::{Parser, Subcommand};
 
@@ -34,12 +34,12 @@ pub struct CLI {
 enum Command {
     Build {
         #[arg[short, long]]
-        output_dir: Option<PathBuf>
+        output_dir: Option<PathBuf>,
     },
     Serve,
     Create {
         article_slug: String,
-    }
+    },
 }
 
 impl CLI {
@@ -47,18 +47,18 @@ impl CLI {
         let current_directory = Path::new("./");
         if !helper::check_is_root(current_directory) {
             return Err(JetError::OutsideProject);
-        }
-        else if let Command::Create { article_slug } = &self.command {
+        } else if let Command::Create { article_slug } = &self.command {
             return self.create_article(article_slug);
         }
 
         let config_path = Path::new("jet.toml");
         let articles_dir = Path::new("./articles");
         let site = Site::new(config_path, &articles_dir)?;
-        let homepage_template: String = match fs::read_to_string(Path::new("templates/homepage.html")) {
-            Ok(template) => template,
-            Err(_) => return Err(JetError::TemplateNotFound)
-        };
+        let homepage_template: String =
+            match fs::read_to_string(Path::new("templates/homepage.html")) {
+                Ok(template) => template,
+                Err(_) => return Err(JetError::TemplateNotFound),
+            };
         let article_template = match fs::read_to_string(Path::new("templates/article.html")) {
             Ok(template) => template,
             Err(_) => return Err(JetError::TemplateNotFound),
@@ -97,19 +97,28 @@ impl CLI {
 
     fn create_article(&self, slug: &str) -> Result<()> {
         let article_content = DEFAULT_ARTICLE_TEMPLATE
-            .replace("{date}", chrono::Local::now().format("%Y-%m-%d").to_string().as_str())
+            .replace(
+                "{date}",
+                chrono::Local::now().format("%Y-%m-%d").to_string().as_str(),
+            )
             .replace("{slug}", slug);
 
         match fs::write(format!("articles/{}.md", slug), article_content) {
             Ok(()) => Ok(println!("Create article: articles/{slug}.md")),
-            Err(_) => Err(JetError::FailedToCreateArticleFile)
+            Err(_) => Err(JetError::FailedToCreateArticleFile),
         }
     }
 
     fn serve(&self, site: &Site, renderer: Renderer) -> Result<()> {
-        let base_url = Url::parse("http://localhost:3000").unwrap().join(site.config.base_url.path()).unwrap();
+        let base_url = Url::parse("http://localhost:3000")
+            .unwrap()
+            .join(site.config.base_url.path())
+            .unwrap();
 
-        println!("Web Server is available at {} (bind address 127.0.0.1) ", base_url);
+        println!(
+            "Web Server is available at {} (bind address 127.0.0.1) ",
+            base_url
+        );
         println!("Press Ctrl+C to stop");
         server::start_server(&base_url, renderer, &site);
 

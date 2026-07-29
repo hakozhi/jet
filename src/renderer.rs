@@ -1,6 +1,6 @@
-use std::collections::HashMap;
-use chrono::{Datelike};
+use chrono::Datelike;
 use minijinja::{Environment, context};
+use std::collections::HashMap;
 
 use crate::article::{Article, Articles};
 
@@ -10,7 +10,6 @@ struct YearArchive {
 }
 
 type YearArchives = HashMap<i32, YearArchive>;
-
 
 #[derive(Clone)]
 pub struct Renderer {
@@ -23,15 +22,12 @@ impl Renderer {
         env.add_template("homepage", homepage_template).unwrap();
         env.add_template("article", article_template).unwrap();
 
-        Renderer {
-            env: env,
-        }
+        Renderer { env: env }
     }
     pub fn render_article(&self, article: &Article) -> String {
         let tmpl = self.env.get_template("article").unwrap();
         tmpl.render(context! { title => article.title, content => article.content, description => article.description })
             .unwrap()
-
     }
     pub fn render_homepage(&self, articles: Articles, is_production: bool) -> String {
         let year_archives = create_year_archives(articles, is_production);
@@ -40,7 +36,8 @@ impl Renderer {
         years.reverse();
         let tmpl = self.env.get_template("homepage").unwrap();
 
-        tmpl.render(context! { years => years, year_archives => year_archives }).unwrap()
+        tmpl.render(context! { years => years, year_archives => year_archives })
+            .unwrap()
     }
 }
 

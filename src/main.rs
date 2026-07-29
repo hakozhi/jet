@@ -1,7 +1,7 @@
-use jet::{*};
 use clap::Parser;
 use commands::CLI;
 use error::JetError;
+use jet::*;
 
 fn main() {
     let cli = CLI::parse();

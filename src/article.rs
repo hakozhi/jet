@@ -1,14 +1,14 @@
-use chrono::{NaiveDate};
-use markdown_frontmatter;
-use std::io;
-use std::fs;
-use std::path;
-use std::path::Path;
-use std::path::PathBuf;
 use crate::error::JetError;
 use crate::error::Result;
 use crate::helper;
 use crate::renderer::Renderer;
+use chrono::NaiveDate;
+use markdown_frontmatter;
+use std::fs;
+use std::io;
+use std::path;
+use std::path::Path;
+use std::path::PathBuf;
 
 #[derive(Clone, serde::Serialize)]
 pub struct Article {
@@ -40,7 +40,7 @@ impl Article {
             content: markdown::to_html_with_options(body, &options).unwrap(),
             slug: frontmatter.slug,
             draft: frontmatter.draft,
-            description: frontmatter.description
+            description: frontmatter.description,
         }
     }
 }
@@ -58,7 +58,8 @@ struct Frontmatter {
 
 pub fn get_articles(articles_dir: &Path) -> Articles {
     let filepaths = get_article_filepaths(&articles_dir).unwrap();
-    let articles: Articles = filepaths.into_iter()
+    let articles: Articles = filepaths
+        .into_iter()
         .map(|path| Article::from_file(&path))
         .collect();
 
@@ -77,14 +78,11 @@ pub fn create_article_html_file(
     let mut output_dir_path = path::PathBuf::from(output_dir);
     output_dir_path.push(&(article.slug.clone() + ".html"));
 
-    let result = fs::write(
-        output_dir_path,
-        renderer.render_article(article),
-    );
+    let result = fs::write(output_dir_path, renderer.render_article(article));
 
     match result {
         Ok(()) => Ok(()),
-        Err(_) => Err(JetError::FailedToCreateArticleFile)
+        Err(_) => Err(JetError::FailedToCreateArticleFile),
     }
 }
 
@@ -109,4 +107,3 @@ fn get_article_filepaths(article_directory: &Path) -> io::Result<Vec<PathBuf>> {
 
     return Ok(article_filepaths);
 }
-

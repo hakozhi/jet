@@ -1,10 +1,10 @@
-use rss::{ChannelBuilder, Item, ItemBuilder};
-use chrono::{Utc, TimeZone};
-use url::Url;
-use crate::site::Site;
 use crate::article::{Article, Articles};
+use crate::site::Site;
+use chrono::{TimeZone, Utc};
+use rss::{ChannelBuilder, Item, ItemBuilder};
 use std::fs;
 use std::path::Path;
+use url::Url;
 
 pub fn create_rss_xml(blog: &Site, output_dir: &Path) {
     let rss_content = create_rss_content(blog);
@@ -36,7 +36,9 @@ fn create_article_items(base_url: &Url, articles: &Articles) -> Vec<Item> {
 }
 
 fn make_article_item(base_url: &Url, article: &Article) -> Item {
-    let pub_date = Utc.from_utc_datetime(&article.date.and_hms_opt(12, 0, 0).unwrap()).to_rfc2822();
+    let pub_date = Utc
+        .from_utc_datetime(&article.date.and_hms_opt(12, 0, 0).unwrap())
+        .to_rfc2822();
     let link = base_url.join(&format!("/posts/{}", article.slug)).unwrap();
 
     return ItemBuilder::default()

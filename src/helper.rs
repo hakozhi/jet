@@ -1,11 +1,11 @@
-use std::path;
-use std::io;
 use std::fs;
+use std::io;
+use std::path;
 use std::path::Path;
 
 pub fn copy_assets_to_output_dir(assets_path: &Path, output_dir_path: &Path) {
     if assets_path.is_dir() {
-       let _ = copy_files_in_dir_to_dst(assets_path, output_dir_path);
+        let _ = copy_files_in_dir_to_dst(assets_path, output_dir_path);
     }
 }
 
@@ -38,6 +38,6 @@ pub fn check_is_root(directory_path: &Path) -> bool {
 pub fn read_file_content(filepath: &Path) -> String {
     match fs::read_to_string(filepath) {
         Ok(contents) => contents,
-        Err(_) => panic!("File doesn't exist.")
+        Err(_) => panic!("File doesn't exist."),
     }
 }
