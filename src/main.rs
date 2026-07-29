@@ -1,14 +1,7 @@
+use jet::{*};
 use clap::Parser;
 use commands::CLI;
 use error::JetError;
-mod commands;
-mod error;
-mod generate;
-mod server;
-mod helper;
-mod article;
-mod rss;
-mod site;
 
 fn main() {
     let cli = CLI::parse();
