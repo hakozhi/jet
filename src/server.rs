@@ -5,14 +5,17 @@ use crate::article::{get_articles};
 use crate::helper;
 use axum::{routing::get, Router, extract, response::Html};
 use tower_http::services::ServeDir;
+use url::Url;
 
 #[tokio::main]
-pub async fn start_server() {
+pub async fn start_server(base_url: &Url) {
     let assets_service = ServeDir::new("assets");
     let articles_routes: Router<> = Router::new().route("/posts/{article_slug}", get(get_article));
-    let app = Router::new().route("/", get(get_homepage))
+    let site_router = Router::new().route("/", get(get_homepage))
         .merge(articles_routes)
         .fallback_service(assets_service);
+
+    let app = Router::new().nest(base_url.path(), site_router);
 
     // Bind to an address and serve the app
     let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await.unwrap();

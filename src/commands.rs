@@ -8,6 +8,7 @@ use crate::rss;
 use crate::server;
 use crate::helper;
 use chrono;
+use url::Url;
 use std::fs;
 use std::path::Path;
 use std::path::PathBuf;
@@ -45,7 +46,7 @@ impl CLI {
     pub fn run(&self) -> Result<()> {
         let current_directory = Path::new("./");
         if !helper::check_is_root(current_directory) {
-            return Err(JetError::OutsideProject)
+            return Err(JetError::OutsideProject);
         }
 
         match &self.command {
@@ -56,7 +57,7 @@ impl CLI {
                     self.build_site(Path::new("public/"))
                 }
             }
-            Command::Serve => Ok(self.serve()),
+            Command::Serve => self.serve(),
             Command::Create { article_slug } => self.create_article(article_slug.clone())
         }
     }
@@ -82,9 +83,7 @@ impl CLI {
         helper::copy_assets_to_output_dir(Path::new("assets/"), &output_dir);
         rss::create_rss_xml(&blog, output_dir);
 
-        println!("Site was generated successfully.");
-
-        Ok(())
+        Ok(println!("Site was generated successfully."))
     }
 
     fn create_article(&self, slug: String) -> Result<()> {
@@ -93,18 +92,21 @@ impl CLI {
             .replace("{slug}", slug.as_str());
 
         match fs::write(format!("articles/{}.md", slug), article_content) {
-            Ok(()) => {
-                println!("Create article: articles/{slug}.md");
-                Ok(())
-            }
+            Ok(()) => Ok(println!("Create article: articles/{slug}.md")),
             Err(_) => Err(JetError::FailedToCreateArticleFile)
         }
     }
 
-    fn serve(&self) {
-        println!("Web Server is available at http://localhost:3000/ (bind address 127.0.0.1) ");
+    fn serve(&self) -> Result<()> {
+        let config_path = Path::new("jet.toml");
+        let articles_dir = Path::new("./articles");
+        let blog = Site::new(config_path, &articles_dir)?;
+        let base_url = Url::parse("http://localhost:3000").unwrap().join(blog.config.base_url.path()).unwrap();
+
+        println!("Web Server is available at {} (bind address 127.0.0.1) ", base_url);
         println!("Press Ctrl+C to stop");
-        server::start_server();
-        
+        server::start_server(&base_url);
+
+        Ok(())
     }
 }
