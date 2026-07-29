@@ -1,5 +1,4 @@
 use chrono::{NaiveDate};
-use minijinja::{context, Environment};
 use markdown_frontmatter;
 use std::io;
 use std::fs;
@@ -9,8 +8,9 @@ use std::path::PathBuf;
 use crate::error::JetError;
 use crate::error::Result;
 use crate::helper;
+use crate::renderer::Renderer;
 
-#[derive(serde::Serialize)]
+#[derive(Clone, serde::Serialize)]
 pub struct Article {
     pub title: String,
     pub date: NaiveDate,
@@ -43,15 +43,6 @@ impl Article {
             description: frontmatter.description
         }
     }
-
-    pub fn to_html(&self, template: &str) -> String {
-        let mut env = Environment::new();
-        env.add_template("article", template).unwrap();
-        let tmpl = env.get_template("article").unwrap();
-
-        tmpl.render(context! { title => self.title, content => self.content, description => self.description })
-            .unwrap()
-    }
 }
 
 pub type Articles = Vec<Article>;
@@ -76,7 +67,7 @@ pub fn get_articles(articles_dir: &Path) -> Articles {
 
 pub fn create_article_html_file(
     article: &Article,
-    article_template_path: &Path,
+    renderer: &Renderer,
     output_dir: &Path,
 ) -> Result<()> {
     if !path::Path::new(&output_dir).is_dir() {
@@ -88,7 +79,7 @@ pub fn create_article_html_file(
 
     let result = fs::write(
         output_dir_path,
-        article.to_html(&helper::read_file_content(article_template_path))
+        renderer.render_article(article),
     );
 
     match result {

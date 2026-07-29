@@ -6,3 +6,4 @@ pub mod helper;
 pub mod article;
 pub mod rss;
 pub mod site;
+pub mod renderer;
