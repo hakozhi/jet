@@ -2,26 +2,44 @@ use std::path::Path;
 
 use serde;
 use toml;
+use url::Url;
 use crate::error::{JetError, Result};
 use crate::{article, helper};
 use crate::article::Articles;
 
 pub struct Site {
-    pub config: Config,
+    pub config: SiteConfig,
     pub articles: Articles
 }
 
-#[derive(serde::Deserialize)]
-pub struct Config {
+pub struct SiteConfig {
     pub title: String,
-    pub base_url: String,
+    pub base_url: Url,
     pub description: String,
+}
+
+#[derive(serde::Deserialize)]
+struct Config {
+    title: String,
+    base_url: String,
+    description: String,
 }
 
 impl Site {
     pub fn new(config_path: &Path, articles_dir: &Path) -> Result<Site> {
+        let Config { title, base_url, description } = Self::read_blog_config(config_path)?;
+        let base_url = match Url::parse(&base_url) {
+            Ok(url) => url,
+            Err(_) => return Err(JetError::InvalidBaseURL)
+        };
+        let config = SiteConfig {
+            title: title,
+            base_url: base_url,
+            description: description,
+        };
+
         Ok(Site {
-            config: Site::read_blog_config(config_path)?,
+            config: config,
             articles: article::get_articles(articles_dir),
         })
     }
