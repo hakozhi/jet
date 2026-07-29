@@ -37,13 +37,13 @@ impl Site {
             Err(_) => return Err(JetError::InvalidBaseURL),
         };
         let config = SiteConfig {
-            title: title,
-            base_url: base_url,
-            description: description,
+            title,
+            base_url,
+            description,
         };
 
         Ok(Site {
-            config: config,
+            config,
             articles: article::get_articles(articles_dir),
         })
     }

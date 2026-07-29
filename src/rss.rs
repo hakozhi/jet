@@ -20,7 +20,7 @@ fn create_rss_content(blog: &Site) -> String {
         .items(create_article_items(&blog.config.base_url, &blog.articles))
         .build();
 
-    return channel.to_string();
+    channel.to_string()
 }
 
 fn create_article_items(base_url: &Url, articles: &Articles) -> Vec<Item> {
@@ -32,7 +32,7 @@ fn create_article_items(base_url: &Url, articles: &Articles) -> Vec<Item> {
         }
     }
 
-    return article_items;
+    article_items
 }
 
 fn make_article_item(base_url: &Url, article: &Article) -> Item {
@@ -41,11 +41,11 @@ fn make_article_item(base_url: &Url, article: &Article) -> Item {
         .to_rfc2822();
     let link = base_url.join(&format!("/posts/{}", article.slug)).unwrap();
 
-    return ItemBuilder::default()
+    ItemBuilder::default()
         .title(article.title.clone())
         .link(link.to_string())
         .description(article.description.clone())
         .content(article.content.clone())
         .pub_date(pub_date)
-        .build();
+        .build()
 }

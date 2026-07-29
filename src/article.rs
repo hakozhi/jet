@@ -57,13 +57,13 @@ struct Frontmatter {
 }
 
 pub fn get_articles(articles_dir: &Path) -> Articles {
-    let filepaths = get_article_filepaths(&articles_dir).unwrap();
+    let filepaths = get_article_filepaths(articles_dir).unwrap();
     let articles: Articles = filepaths
         .into_iter()
         .map(|path| Article::from_file(&path))
         .collect();
 
-    return articles;
+    articles
 }
 
 pub fn create_article_html_file(
@@ -72,7 +72,7 @@ pub fn create_article_html_file(
     output_dir: &Path,
 ) -> Result<()> {
     if !path::Path::new(&output_dir).is_dir() {
-        fs::create_dir(&output_dir).unwrap();
+        fs::create_dir(output_dir).unwrap();
     }
 
     let mut output_dir_path = path::PathBuf::from(output_dir);
@@ -97,13 +97,11 @@ fn get_article_filepaths(article_directory: &Path) -> io::Result<Vec<PathBuf>> {
             let sub_files = get_article_filepaths(&path)?;
             article_filepaths.extend(sub_files);
         } else if path.is_file() {
-            if let Some(ext) = path.extension() {
-                if ext == "md" {
-                    article_filepaths.push(path);
-                }
+            if let Some(ext) = path.extension() && ext == "md" {
+                article_filepaths.push(path);
             }
         }
     }
 
-    return Ok(article_filepaths);
+    Ok(article_filepaths)
 }

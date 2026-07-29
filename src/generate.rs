@@ -13,7 +13,7 @@ pub fn create_homepage_html_file(
     is_production: bool,
 ) -> Result<()> {
     if !path::Path::new(&output_dir_path).is_dir() {
-        fs::create_dir(&output_dir_path).unwrap();
+        fs::create_dir(output_dir_path).unwrap();
     }
 
     let homepage_html_filename = Path::new(output_dir_path).join("index.html");

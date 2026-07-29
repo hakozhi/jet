@@ -53,7 +53,7 @@ impl CLI {
 
         let config_path = Path::new("jet.toml");
         let articles_dir = Path::new("./articles");
-        let site = Site::new(config_path, &articles_dir)?;
+        let site = Site::new(config_path, articles_dir)?;
         let homepage_template: String =
             match fs::read_to_string(Path::new("templates/homepage.html")) {
                 Ok(template) => template,
@@ -79,20 +79,21 @@ impl CLI {
     }
 
     fn build_site(&self, output_dir: &Path, site: &Site, renderer: Renderer) -> Result<()> {
-        generate::create_homepage_html_file(site.articles.clone(), &output_dir, &renderer, true)?;
+        generate::create_homepage_html_file(site.articles.clone(), output_dir, &renderer, true)?;
 
         for article in &site.articles {
             if !article.draft {
                 let output_dir_path = Path::new(&output_dir).join("posts/");
-                create_article_html_file(&article, &renderer, &output_dir_path)?;
+                create_article_html_file(article, &renderer, &output_dir_path)?;
             }
         }
 
         println!("{}", output_dir.as_os_str().to_str().unwrap());
-        helper::copy_assets_to_output_dir(Path::new("assets/"), &output_dir);
-        rss::create_rss_xml(&site, output_dir);
+        helper::copy_assets_to_output_dir(Path::new("assets/"), output_dir);
+        rss::create_rss_xml(site, output_dir);
 
-        Ok(println!("Site was generated successfully."))
+        println!("Site was generated successfully.");
+        Ok(())
     }
 
     fn create_article(&self, slug: &str) -> Result<()> {
@@ -104,7 +105,10 @@ impl CLI {
             .replace("{slug}", slug);
 
         match fs::write(format!("articles/{}.md", slug), article_content) {
-            Ok(()) => Ok(println!("Create article: articles/{slug}.md")),
+            Ok(()) => {
+                println!("Create article: articles/{slug}.md");
+                Ok(())
+            },
             Err(_) => Err(JetError::FailedToCreateArticleFile),
         }
     }
@@ -120,7 +124,7 @@ impl CLI {
             base_url
         );
         println!("Press Ctrl+C to stop");
-        server::start_server(&base_url, renderer, &site);
+        server::start_server(&base_url, renderer, site);
 
         Ok(())
     }

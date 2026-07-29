@@ -12,7 +12,7 @@ pub fn copy_assets_to_output_dir(assets_path: &Path, output_dir_path: &Path) {
 pub fn copy_files_in_dir_to_dst(src_dir: &Path, dst_dir: &Path) -> io::Result<()> {
     fs::create_dir_all(dst_dir)?;
 
-    for entry in fs::read_dir(&src_dir)? {
+    for entry in fs::read_dir(src_dir)? {
         let entry = entry?;
         let path = entry.path();
 

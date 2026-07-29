@@ -15,7 +15,7 @@ struct AppState {
 #[tokio::main]
 pub async fn start_server<'a>(base_url: &'a Url, renderer: Renderer, site: &'a Site) {
     let state: AppState = AppState {
-        renderer: renderer,
+        renderer,
         articles: site.articles.clone(),
     };
 

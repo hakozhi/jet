@@ -22,7 +22,7 @@ impl Renderer {
         env.add_template("homepage", homepage_template).unwrap();
         env.add_template("article", article_template).unwrap();
 
-        Renderer { env: env }
+        Renderer { env }
     }
     pub fn render_article(&self, article: &Article) -> String {
         let tmpl = self.env.get_template("article").unwrap();
@@ -64,5 +64,5 @@ fn create_year_archives(articles: Articles, is_production: bool) -> YearArchives
         year_archive.articles.sort_by(|a, b| b.date.cmp(&a.date));
     }
 
-    return year_archives;
+    year_archives
 }
