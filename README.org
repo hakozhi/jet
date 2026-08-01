@@ -7,10 +7,10 @@
 
 ** 安裝
 
-```
+#+begin_src 
 git clone https://github.com/yubairuime/jet.git
 cargo install --path .
-```
+#+end_src
 
 ** 使用
 
