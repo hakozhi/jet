@@ -13,22 +13,30 @@ struct AppState {
 }
 
 #[tokio::main]
-pub async fn start_server<'a>(base_url: &'a Url, renderer: Renderer, site: &'a Site) {
-    let state: AppState = AppState {
+pub async fn start_server(base_url: &Url, renderer: Renderer, site: &Site) {
+    let state = AppState {
         renderer,
         articles: site.articles.clone(),
     };
 
-    let assets_service = ServeDir::new("assets");
-    let site_router = Router::new()
+    let app = Router::new()
         .route("/", get(get_homepage))
         .merge(article_routes())
-        .fallback_service(assets_service)
+        .fallback_service(ServeDir::new("assets"))
         .with_state(state);
-    let app = Router::new().nest(base_url.path(), site_router);
 
-    // Bind to an address and serve the app
-    let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await.unwrap();
+    // let app = Router::new().merge(site_router);
+
+    let bind_address = base_url
+        .socket_addrs(|| Some(3000))
+        .ok()
+        .and_then(|addresses| addresses.into_iter().next())
+        .unwrap_or_else(|| "0.0.0.0:3000".parse().unwrap());
+
+    let listener = tokio::net::TcpListener::bind(bind_address)
+        .await
+        .unwrap();
+
     axum::serve(listener, app).await.unwrap();
 }
 
